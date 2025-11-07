@@ -51,6 +51,7 @@ buildNumber.properties
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.idea/
 
 # Eclipse
 .apt_generated
@@ -79,7 +80,7 @@ spring-boot-devtools.properties
 #------------------------
 
 # dependencies
-/node_modules
+*/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -90,14 +91,14 @@ spring-boot-devtools.properties
 package-lock.json
 
 # testing
-/coverage
+*/coverage
 
 # next.js
-/.next/
-/out/
+*/.next/
+*/out/
 
 # production
-/build
+*/build
 
 # debug
 npm-debug.log*
