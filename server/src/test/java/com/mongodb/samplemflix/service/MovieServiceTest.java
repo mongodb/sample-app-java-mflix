@@ -746,6 +746,16 @@ class MovieServiceTest {
     }
 
     @Test
+    @DisplayName("Should throw ValidationException when API key is placeholder value in vector search")
+    void testVectorSearchMovies_PlaceholderApiKey() {
+        // Arrange
+        ReflectionTestUtils.setField(movieService, "voyageApiKey", "your_voyage_api_key");
+
+        // Act & Assert
+        assertThrows(ValidationException.class, () -> movieService.vectorSearchMovies("test query", 10));
+    }
+
+    @Test
     @DisplayName("Should enforce limit constraints in vector search")
     void testVectorSearchMovies_LimitConstraints() {
         // Arrange
