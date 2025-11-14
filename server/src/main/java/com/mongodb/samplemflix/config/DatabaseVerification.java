@@ -138,17 +138,24 @@ public class DatabaseVerification {
      */
     private void createTextSearchIndex(MongoCollection<Document> moviesCollection) {
         try {
-            // Check if the text search index already exists
-            boolean indexExists = false;
+            // Check if any text search index already exists
+            // MongoDB only allows one text index per collection, so we check for any text index
+            // not just one with our specific name
+            boolean textIndexExists = false;
+            String existingTextIndexName = null;
+
             for (Document index : moviesCollection.listIndexes()) {
-                if (TEXT_INDEX_NAME.equals(index.getString("name"))) {
-                    indexExists = true;
-                    logger.info("Text search index '{}' already exists", TEXT_INDEX_NAME);
+                Document key = index.get("key", Document.class);
+                if (key != null && key.containsKey("_fts")) {
+                    // _fts is the internal field MongoDB uses for text indexes
+                    textIndexExists = true;
+                    existingTextIndexName = index.getString("name");
+                    logger.info("Text search index '{}' already exists on movies collection", existingTextIndexName);
                     break;
                 }
             }
 
-            if (!indexExists) {
+            if (!textIndexExists) {
                 // Create compound text index on plot, title, and fullplot fields
                 // The background option allows the index to be built without blocking other operations
                 IndexOptions indexOptions = new IndexOptions()
