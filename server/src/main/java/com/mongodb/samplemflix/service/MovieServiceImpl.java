@@ -819,9 +819,10 @@ public class MovieServiceImpl implements MovieService {
         }
 
         // Check if Voyage API key is configured
-        if (voyageApiKey == null || voyageApiKey.trim().isEmpty()) {
+        if (voyageApiKey == null || voyageApiKey.trim().isEmpty() ||
+            voyageApiKey.equals("your_voyage_api_key")) {
             throw new ValidationException(
-                "Vector search unavailable: VOYAGE_API_KEY not configured. Please add your API key to the application.properties file"
+                "Vector search unavailable: VOYAGE_API_KEY not configured. Please add your Voyage AI API key to the .env file"
             );
         }
 
@@ -978,6 +979,10 @@ public class MovieServiceImpl implements MovieService {
 
         // Check for successful response
         if (response.statusCode() != 200) {
+            // Handle authentication errors specifically
+            if (response.statusCode() == 401) {
+                throw new IOException("Invalid Voyage AI API key. Please check your VOYAGE_API_KEY in the .env file");
+            }
             throw new IOException("Voyage AI API returned status code " + response.statusCode() + ": " + response.body());
         }
 
