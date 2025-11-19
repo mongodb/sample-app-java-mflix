@@ -1,18 +1,7 @@
-#-------
-# Common
-#-------
-
-# Environment variables
+# Java/Spring Boot - Specific Ignores
+# Common patterns
 .env
-!.env.example
-*.pem
-
-#MacOS files
 .DS_Store
-
-#---------------------------
-# Java / Spring Boot backend
-#---------------------------
 
 #Cache
 .cache/
@@ -73,41 +62,3 @@ bin/
 
 # Spring Boot
 spring-boot-devtools.properties
-
-#------------------------
-# Next.js Client frontend
-#------------------------
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-package-lock.json
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
