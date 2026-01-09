@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.samplemflix.exception.ResourceNotFoundException;
+import com.mongodb.samplemflix.exception.ServiceUnavailableException;
 import com.mongodb.samplemflix.exception.ValidationException;
 import com.mongodb.samplemflix.model.Movie;
 import com.mongodb.samplemflix.model.dto.BatchInsertResponse;
@@ -736,23 +737,23 @@ class MovieServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw ValidationException when API key is missing in vector search")
+    @DisplayName("Should throw ServiceUnavailableException when API key is missing in vector search")
     void testVectorSearchMovies_MissingApiKey() {
         // Arrange
         ReflectionTestUtils.setField(movieService, "voyageApiKey", null);
 
         // Act & Assert
-        assertThrows(ValidationException.class, () -> movieService.vectorSearchMovies("test query", 10));
+        assertThrows(ServiceUnavailableException.class, () -> movieService.vectorSearchMovies("test query", 10));
     }
 
     @Test
-    @DisplayName("Should throw ValidationException when API key is placeholder value in vector search")
+    @DisplayName("Should throw ServiceUnavailableException when API key is placeholder value in vector search")
     void testVectorSearchMovies_PlaceholderApiKey() {
         // Arrange
         ReflectionTestUtils.setField(movieService, "voyageApiKey", "your_voyage_api_key");
 
         // Act & Assert
-        assertThrows(ValidationException.class, () -> movieService.vectorSearchMovies("test query", 10));
+        assertThrows(ServiceUnavailableException.class, () -> movieService.vectorSearchMovies("test query", 10));
     }
 
     @Test

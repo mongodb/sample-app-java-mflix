@@ -6,7 +6,10 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.samplemflix.exception.DatabaseOperationException;
 import com.mongodb.samplemflix.exception.ResourceNotFoundException;
+import com.mongodb.samplemflix.exception.ServiceUnavailableException;
 import com.mongodb.samplemflix.exception.ValidationException;
+import com.mongodb.samplemflix.exception.VoyageAPIException;
+import com.mongodb.samplemflix.exception.VoyageAuthException;
 import com.mongodb.samplemflix.model.Movie;
 import com.mongodb.samplemflix.model.dto.*;
 import com.mongodb.samplemflix.repository.MovieRepository;
@@ -631,39 +634,84 @@ public class MovieServiceImpl implements MovieService {
             ));
         }
 
-        // Add directors search if provided (using text operator with fuzzy matching)
+        // Add directors search if provided
+        // Use compound operator with "should" clauses to create a scoring hierarchy:
+        // 1. phrase match (highest score) - exact phrase in same array element
+        // 2. text match without fuzzy (high score) - all terms present, exact spelling
+        // 3. text match with fuzzy (lower score) - typo-tolerant fallback; update fuzzy settings as needed
+        // For more details, see: https://www.mongodb.com/docs/atlas/atlas-search/operators-collectors/text/
         if (searchRequest.getDirectors() != null && !searchRequest.getDirectors().trim().isEmpty()) {
-            searchPhrases.add(new Document("text", new Document()
-                    .append("query", searchRequest.getDirectors().trim())
-                    .append("path", Movie.Fields.DIRECTORS)
-                    .append("fuzzy", new Document()
-                            .append("maxEdits", 1)
-                            .append("prefixLength", 5)
-                    )
+            String directorsQuery = searchRequest.getDirectors().trim();
+            searchPhrases.add(new Document("compound", new Document()
+                    .append("should", java.util.Arrays.asList(
+                            // Highest score: exact phrase match
+                            new Document("phrase", new Document()
+                                    .append("query", directorsQuery)
+                                    .append("path", Movie.Fields.DIRECTORS)),
+                            // High score: exact text match (all terms, no fuzzy)
+                            new Document("text", new Document()
+                                    .append("query", directorsQuery)
+                                    .append("path", Movie.Fields.DIRECTORS)
+                                    .append("matchCriteria", "all")),
+                            // Lower score: fuzzy match (typo tolerance)
+                            new Document("text", new Document()
+                                    .append("query", directorsQuery)
+                                    .append("path", Movie.Fields.DIRECTORS)
+                                    .append("matchCriteria", "all")
+                                    // Fuzzy settings: allow up to 1 edit, require first 2 characters to match
+                                    .append("fuzzy", new Document()
+                                            .append("maxEdits", 1)
+                                            .append("prefixLength", 2)))
+                    ))
+                    .append("minimumShouldMatch", 1)
             ));
         }
 
-        // Add writers search if provided (using text operator with fuzzy matching)
+        // Add writers search if provided (see directors comments for compound scoring hierarchy)
         if (searchRequest.getWriters() != null && !searchRequest.getWriters().trim().isEmpty()) {
-            searchPhrases.add(new Document("text", new Document()
-                    .append("query", searchRequest.getWriters().trim())
-                    .append("path", Movie.Fields.WRITERS)
-                    .append("fuzzy", new Document()
-                            .append("maxEdits", 1)
-                            .append("prefixLength", 5)
-                    )
+            String writersQuery = searchRequest.getWriters().trim();
+            searchPhrases.add(new Document("compound", new Document()
+                    .append("should", java.util.Arrays.asList(
+                            new Document("phrase", new Document()
+                                    .append("query", writersQuery)
+                                    .append("path", Movie.Fields.WRITERS)),
+                            new Document("text", new Document()
+                                    .append("query", writersQuery)
+                                    .append("path", Movie.Fields.WRITERS)
+                                    .append("matchCriteria", "all")),
+                            new Document("text", new Document()
+                                    .append("query", writersQuery)
+                                    .append("path", Movie.Fields.WRITERS)
+                                    .append("matchCriteria", "all")
+                                    .append("fuzzy", new Document()
+                                            .append("maxEdits", 1)
+                                            .append("prefixLength", 2)))
+                    ))
+                    .append("minimumShouldMatch", 1)
             ));
         }
 
-        // Add cast search if provided (using text operator with fuzzy matching)
+        // Add cast search if provided (see directors comments for compound scoring hierarchy)
         if (searchRequest.getCast() != null && !searchRequest.getCast().trim().isEmpty()) {
-            searchPhrases.add(new Document("text", new Document()
-                    .append("query", searchRequest.getCast().trim())
-                    .append("path", Movie.Fields.CAST)
-                    .append("fuzzy", new Document()
-                            .append("maxEdits", 1)
-                            .append("prefixLength", 5)
-                    )
+            String castQuery = searchRequest.getCast().trim();
+            searchPhrases.add(new Document("compound", new Document()
+                    .append("should", java.util.Arrays.asList(
+                            new Document("phrase", new Document()
+                                    .append("query", castQuery)
+                                    .append("path", Movie.Fields.CAST)),
+                            new Document("text", new Document()
+                                    .append("query", castQuery)
+                                    .append("path", Movie.Fields.CAST)
+                                    .append("matchCriteria", "all")),
+                            new Document("text", new Document()
+                                    .append("query", castQuery)
+                                    .append("path", Movie.Fields.CAST)
+                                    .append("matchCriteria", "all")
+                                    .append("fuzzy", new Document()
+                                            .append("maxEdits", 1)
+                                            .append("prefixLength", 2)))
+                    ))
+                    .append("minimumShouldMatch", 1)
             ));
         }
 
@@ -821,8 +869,8 @@ public class MovieServiceImpl implements MovieService {
         // Check if Voyage API key is configured
         if (voyageApiKey == null || voyageApiKey.trim().isEmpty() ||
             voyageApiKey.equals("your_voyage_api_key")) {
-            throw new ValidationException(
-                "Vector search unavailable: VOYAGE_API_KEY not configured. Please add your Voyage AI API key to the .env file"
+            throw new ServiceUnavailableException(
+                "Vector search unavailable: VOYAGE_API_KEY not configured. Please add your API key to the .env file"
             );
         }
 
@@ -929,10 +977,16 @@ public class MovieServiceImpl implements MovieService {
 
             return results;
 
+        } catch (VoyageAuthException e) {
+            // Re-raise Voyage AI authentication errors to be handled by GlobalExceptionHandler
+            throw e;
+        } catch (VoyageAPIException e) {
+            // Re-raise Voyage AI API errors to be handled by GlobalExceptionHandler
+            throw e;
         } catch (IOException e) {
-            // Handle Voyage AI API errors
+            // Handle network errors calling Voyage AI API
             String errorMsg = e.getMessage() != null ? e.getMessage() : "Network error calling Voyage AI API";
-            throw new DatabaseOperationException("Error performing vector search: " + errorMsg);
+            throw new VoyageAPIException("Error performing vector search: " + errorMsg);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new DatabaseOperationException("Vector search was interrupted");
@@ -981,9 +1035,12 @@ public class MovieServiceImpl implements MovieService {
         if (response.statusCode() != 200) {
             // Handle authentication errors specifically
             if (response.statusCode() == 401) {
-                throw new IOException("Invalid Voyage AI API key. Please check your VOYAGE_API_KEY in the .env file");
+                throw new VoyageAuthException("Invalid Voyage AI API key. Please check your VOYAGE_API_KEY in the .env file");
             }
-            throw new IOException("Voyage AI API returned status code " + response.statusCode() + ": " + response.body());
+            throw new VoyageAPIException(
+                "Voyage AI API returned status code " + response.statusCode() + ": " + response.body(),
+                response.statusCode()
+            );
         }
 
         // Parse the JSON response to extract the embedding
