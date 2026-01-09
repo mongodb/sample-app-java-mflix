@@ -79,6 +79,61 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailableException(
+            ServiceUnavailableException ex, WebRequest request) {
+        logger.error("Service unavailable: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .success(false)
+                .message(ex.getMessage())
+                .error(ErrorResponse.ErrorDetails.builder()
+                        .message(ex.getMessage())
+                        .code("SERVICE_UNAVAILABLE")
+                        .build())
+                .timestamp(Instant.now().toString())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(VoyageAuthException.class)
+    public ResponseEntity<ErrorResponse> handleVoyageAuthException(
+            VoyageAuthException ex, WebRequest request) {
+        logger.error("Voyage AI authentication error: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .success(false)
+                .message(ex.getMessage())
+                .error(ErrorResponse.ErrorDetails.builder()
+                        .message(ex.getMessage())
+                        .code("VOYAGE_AUTH_ERROR")
+                        .details("Please verify your VOYAGE_API_KEY is correct in the .env file")
+                        .build())
+                .timestamp(Instant.now().toString())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(VoyageAPIException.class)
+    public ResponseEntity<ErrorResponse> handleVoyageAPIException(
+            VoyageAPIException ex, WebRequest request) {
+        logger.error("Voyage AI API error: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .success(false)
+                .message("Vector search service unavailable")
+                .error(ErrorResponse.ErrorDetails.builder()
+                        .message(ex.getMessage())
+                        .code("VOYAGE_API_ERROR")
+                        .build())
+                .timestamp(Instant.now().toString())
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler(DatabaseOperationException.class)
     public ResponseEntity<ErrorResponse> handleDatabaseOperationException(
             DatabaseOperationException ex, WebRequest request) {
