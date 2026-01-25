@@ -85,7 +85,25 @@ public class MovieServiceImpl implements MovieService {
 
         return mongoTemplate.find(mongoQuery, Movie.class);
     }
-    
+
+    @Override
+    public List<String> getDistinctGenres() {
+        // Use MongoTemplate's findDistinct to get all unique values from the genres array field
+        // MongoDB automatically flattens array fields when using distinct()
+        List<String> genres = mongoTemplate.findDistinct(
+                new Query(),
+                Movie.Fields.GENRES,
+                Movie.class,
+                String.class
+        );
+
+        // Filter out null/empty values and sort alphabetically
+        return genres.stream()
+                .filter(genre -> genre != null && !genre.isEmpty())
+                .sorted(String::compareTo)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public Movie getMovieById(String id) {
         if (!ObjectId.isValid(id)) {
