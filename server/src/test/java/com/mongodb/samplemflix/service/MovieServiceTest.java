@@ -801,4 +801,82 @@ class MovieServiceTest {
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> movieService.findSimilarMovies(movieId, 10));
     }
+
+    // ==================== GET DISTINCT GENRES TESTS ====================
+
+    @Test
+    @DisplayName("Should get distinct genres successfully")
+    void testGetDistinctGenres_Success() {
+        // Arrange
+        List<String> expectedGenres = Arrays.asList("Action", "Comedy", "Drama", "Horror", "Sci-Fi");
+        when(mongoTemplate.findDistinct(any(Query.class), eq("genres"), eq(Movie.class), eq(String.class)))
+                .thenReturn(expectedGenres);
+
+        // Act
+        List<String> result = movieService.getDistinctGenres();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(5, result.size());
+        assertEquals("Action", result.get(0));
+        assertEquals("Comedy", result.get(1));
+        verify(mongoTemplate).findDistinct(any(Query.class), eq("genres"), eq(Movie.class), eq(String.class));
+    }
+
+    @Test
+    @DisplayName("Should return empty list when no genres exist")
+    void testGetDistinctGenres_EmptyList() {
+        // Arrange
+        when(mongoTemplate.findDistinct(any(Query.class), eq("genres"), eq(Movie.class), eq(String.class)))
+                .thenReturn(Arrays.asList());
+
+        // Act
+        List<String> result = movieService.getDistinctGenres();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(mongoTemplate).findDistinct(any(Query.class), eq("genres"), eq(Movie.class), eq(String.class));
+    }
+
+    @Test
+    @DisplayName("Should filter out null and empty genres")
+    void testGetDistinctGenres_FiltersNullAndEmpty() {
+        // Arrange
+        List<String> genresWithNulls = new ArrayList<>(Arrays.asList("Action", null, "", "Drama", "Comedy"));
+        when(mongoTemplate.findDistinct(any(Query.class), eq("genres"), eq(Movie.class), eq(String.class)))
+                .thenReturn(genresWithNulls);
+
+        // Act
+        List<String> result = movieService.getDistinctGenres();
+
+        // Assert
+        assertNotNull(result);
+        // The service should filter out null and empty values
+        assertEquals(3, result.size());
+        assertTrue(result.contains("Action"));
+        assertTrue(result.contains("Drama"));
+        assertTrue(result.contains("Comedy"));
+        assertFalse(result.contains(null));
+        assertFalse(result.contains(""));
+    }
+
+    @Test
+    @DisplayName("Should return genres sorted alphabetically")
+    void testGetDistinctGenres_SortedAlphabetically() {
+        // Arrange
+        List<String> unsortedGenres = Arrays.asList("Drama", "Action", "Comedy");
+        when(mongoTemplate.findDistinct(any(Query.class), eq("genres"), eq(Movie.class), eq(String.class)))
+                .thenReturn(unsortedGenres);
+
+        // Act
+        List<String> result = movieService.getDistinctGenres();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals("Action", result.get(0));
+        assertEquals("Comedy", result.get(1));
+        assertEquals("Drama", result.get(2));
+    }
 }

@@ -109,7 +109,26 @@ public class MovieControllerImpl {
         
         return ResponseEntity.ok(response);
     }
-    
+
+    @Operation(
+        summary = "Get all distinct genres",
+        description = "Retrieve a list of all unique genre values from the movies collection. " +
+                     "Demonstrates the distinct() operation. Returns genres sorted alphabetically."
+    )
+    @GetMapping("/genres")
+    public ResponseEntity<SuccessResponse<List<String>>> getDistinctGenres() {
+        List<String> genres = movieService.getDistinctGenres();
+
+        SuccessResponse<List<String>> response = SuccessResponse.<List<String>>builder()
+                .success(true)
+                .message("Found " + genres.size() + " distinct genres")
+                .data(genres)
+                .timestamp(Instant.now().toString())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(
         summary = "Get a single movie by ID",
         description = "Retrieve a single movie by its MongoDB ObjectId."

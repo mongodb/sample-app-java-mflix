@@ -936,4 +936,38 @@ class MovieControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.deletedCount").value(0));
     }
+
+    // ==================== GET DISTINCT GENRES TESTS ====================
+
+    @Test
+    @DisplayName("GET /api/movies/genres - Should return list of distinct genres")
+    void testGetDistinctGenres_Success() throws Exception {
+        // Arrange
+        List<String> genres = Arrays.asList("Action", "Comedy", "Drama", "Horror", "Sci-Fi");
+        when(movieService.getDistinctGenres()).thenReturn(genres);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/movies/genres"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(5)))
+                .andExpect(jsonPath("$.data[0]").value("Action"))
+                .andExpect(jsonPath("$.data[1]").value("Comedy"))
+                .andExpect(jsonPath("$.data[2]").value("Drama"));
+    }
+
+    @Test
+    @DisplayName("GET /api/movies/genres - Should return empty list when no genres exist")
+    void testGetDistinctGenres_EmptyList() throws Exception {
+        // Arrange
+        when(movieService.getDistinctGenres()).thenReturn(Arrays.asList());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/movies/genres"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(0)));
+    }
 }

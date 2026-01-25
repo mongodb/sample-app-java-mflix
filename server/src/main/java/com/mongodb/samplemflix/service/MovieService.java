@@ -21,6 +21,14 @@ public interface MovieService {
 
     List<Movie> getAllMovies(MovieSearchQuery query);
 
+    /**
+     * Gets all distinct genre values from the movies collection.
+     * Demonstrates the distinct() operation.
+     *
+     * @return List of unique genre strings, sorted alphabetically
+     */
+    List<String> getDistinctGenres();
+
     Movie getMovieById(String id);
 
     Movie createMovie(CreateMovieRequest request);
