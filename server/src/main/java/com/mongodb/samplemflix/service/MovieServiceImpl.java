@@ -376,7 +376,7 @@ public class MovieServiceImpl implements MovieService {
         int resultLimit = Math.clamp(limit != null ? limit : 10, 1, 50);
 
         // Build match criteria
-        Criteria matchCriteria = Criteria.where(Movie.Fields.YEAR).type(16).gte(1800).lte(2030);
+        Criteria matchCriteria = Criteria.where(Movie.Fields.YEAR).type(16);
 
         // Add movie ID filter if provided
         if (movieId != null && !movieId.trim().isEmpty()) {
@@ -461,7 +461,7 @@ public class MovieServiceImpl implements MovieService {
         Aggregation aggregation = Aggregation.newAggregation(
                 // STAGE 1: Match movies with valid year data
                 Aggregation.match(
-                        Criteria.where(Movie.Fields.YEAR).type(16).gte(1800).lte(2030)
+                        Criteria.where(Movie.Fields.YEAR).type(16)
                 ),
 
                 // STAGE 2: Group by year and calculate statistics
@@ -512,7 +512,7 @@ public class MovieServiceImpl implements MovieService {
                 // STAGE 1: Match movies with directors and valid year
                 Aggregation.match(
                         Criteria.where(Movie.Fields.DIRECTORS).exists(true).ne(null).ne(List.of())
-                                .and(Movie.Fields.YEAR).type(16).gte(1800).lte(2030)
+                                .and(Movie.Fields.YEAR).type(16)
                 ),
 
                 // STAGE 2: Unwind directors array
