@@ -14,12 +14,16 @@ This is a full-stack movie browsing application built with Java Spring Boot and 
     └── mvnw
 ```
 
+## Data Limitations
+
+The `sample_mflix` dataset contains movies released up to **2016**. Searching for movies from 2017 or later will return no results. This is a limitation of the sample dataset, not the application.
+
 ## Prerequisites
 
 - **Java 21** or higher
 - **Node.js 20** or higher
 - **MongoDB Atlas cluster or local deployment** with the `sample_mflix` dataset loaded
-  - [Load sample data](https://www.mongodb.com/docs/atlas/sample-data/) 
+  - [Load sample data](https://www.mongodb.com/docs/atlas/sample-data/)
 - **Maven** (included via Maven Wrapper)
 - **Voyage AI API key** (For MongoDB Vector Search)
   - [Get a Voyage AI API key](https://www.voyageai.com/)

@@ -85,7 +85,7 @@ public class MovieControllerImpl {
             @RequestParam(defaultValue = "title") String sortBy,
             @Parameter(description = "Sort order: 'asc' or 'desc' (default: asc)")
             @RequestParam(defaultValue = "asc") String sortOrder) {
-        
+
         MovieSearchQuery query = MovieSearchQuery.builder()
                 .q(q)
                 .genre(genre)
@@ -97,16 +97,18 @@ public class MovieControllerImpl {
                 .sortBy(sortBy)
                 .sortOrder(sortOrder)
                 .build();
-        
+
         List<Movie> movies = movieService.getAllMovies(query);
-        
+
+        String message = "Found " + movies.size() + " movies";
+
         SuccessResponse<List<Movie>> response = SuccessResponse.<List<Movie>>builder()
                 .success(true)
-                .message("Found " + movies.size() + " movies")
+                .message(message)
                 .data(movies)
                 .timestamp(Instant.now().toString())
                 .build();
-        
+
         return ResponseEntity.ok(response);
     }
 
