@@ -1,13 +1,19 @@
 package com.mongodb.samplemflix.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -18,15 +24,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * for awards, IMDB ratings, and Tomatoes ratings.
  *
  * <p>Note: We use Lombok annotations to reduce boilerplate code:
- * - @Data: Generates getters, setters, toString, equals, and hashCode
+ * - @Getter @Setter @ToString @EqualsAndHashCode: Generates getters, setters, toString, equals, and hashCode
  * - @Builder: Provides a fluent builder pattern for object construction
- * - @NoArgsConstructor: Generates a no-argument constructor (required by MongoDB driver)
- * - @AllArgsConstructor: Generates a constructor with all fields
  */
-@Data
+@Getter
+@Setter
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
 @Document(collection = "movies")
 public class Movie {
 
@@ -77,16 +84,21 @@ public class Movie {
      * Can be null for new documents (MongoDB will generate it).
      */
     @JsonProperty("_id")
+    @Id
+    @ToString.Include
+    @EqualsAndHashCode.Include
     private ObjectId id;
 
     /**
      * Movie title (required field).
      */
+    @ToString.Include
     private String title;
 
     /**
      * Release year.
      */
+    @ToString.Include
     private Integer year;
 
     /**
@@ -100,9 +112,14 @@ public class Movie {
     private String fullplot;
 
     /**
-     * Release date.
+     * Release date as a calendar date (no time-of-day or time zone).
+     *
+     * <p>A movie release date is a "date only" concept (e.g. "1999-03-31"), not a specific
+     * moment in time. We use {@link LocalDate} because it represents exactly that: a date
+     * without time-of-day or time zone information. Spring Data MongoDB maps this via the
+     * Jsr310 {@code LocalDateCodec}.
      */
-    private Date released;
+    private LocalDate released;
 
     /**
      * Runtime in minutes.
@@ -177,10 +194,11 @@ public class Movie {
     /**
      * Nested class representing awards information.
      */
-    @Data
+    @Getter
+    @Setter
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
     public static class Awards {
         /**
          * Number of awards won.
@@ -201,10 +219,11 @@ public class Movie {
     /**
      * Nested class representing IMDB rating information.
      */
-    @Data
+    @Getter
+    @Setter
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
     public static class Imdb {
         /**
          * IMDB rating (0.0 to 10.0).
@@ -225,10 +244,11 @@ public class Movie {
     /**
      * Nested class representing Rotten Tomatoes rating information.
      */
-    @Data
+    @Getter
+    @Setter
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
     public static class Tomatoes {
         /**
          * Viewer ratings information.
@@ -256,17 +276,21 @@ public class Movie {
         private String production;
 
         /**
-         * Last updated date.
+         * Timestamp of the last update to Tomatoes ratings.
+         *
+         * <p>Stored as BSON DateTime in MongoDB. Uses {@link Instant} for an immutable,
+         * UTC-only representation of this point-in-time event.
          */
-        private Date lastUpdated;
+        private Instant lastUpdated;
 
         /**
          * Nested class for viewer ratings.
          */
-        @Data
+        @Getter
+        @Setter
         @Builder
-        @NoArgsConstructor
-        @AllArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
+        @NoArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
         public static class Viewer {
             /**
              * Viewer rating (0.0 to 5.0).
@@ -287,10 +311,11 @@ public class Movie {
         /**
          * Nested class for critic ratings.
          */
-        @Data
+        @Getter
+        @Setter
         @Builder
-        @NoArgsConstructor
-        @AllArgsConstructor
+        @AllArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
+        @NoArgsConstructor(access = AccessLevel.PROTECTED) // needed for Spring Data and MongoDB mapping
         public static class Critic {
             /**
              * Critic rating (0.0 to 5.0).

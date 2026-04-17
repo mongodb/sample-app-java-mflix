@@ -1,12 +1,9 @@
 package com.mongodb.samplemflix.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * DTO for movies with their most recent comments aggregation result.
@@ -14,95 +11,94 @@ import lombok.NoArgsConstructor;
  * <p>This class represents the result of the reportingByComments aggregation
  * which joins movies with their comments and returns movies with the most comments.
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MovieWithCommentsResult {
+@Builder
+public record MovieWithCommentsResult (
 
     /**
      * Movie ID as string.
      */
-    private String _id;
+    String _id,
 
     /**
      * Movie title.
      */
-    private String title;
+    String title,
 
     /**
      * Release year.
      */
-    private Integer year;
+    Integer year,
 
     /**
      * Short plot summary.
      */
-    private String plot;
+    String plot,
 
     /**
      * Poster image URL.
      */
-    private String poster;
+    String poster,
 
     /**
      * List of genres.
      */
-    private List<String> genres;
+    List<String> genres,
 
     /**
      * IMDB rating (0.0 to 10.0).
      */
-    private Double imdbRating;
+    Double imdbRating,
 
     /**
      * Most recent comments for this movie.
      */
-    private List<CommentInfo> recentComments;
+    List<CommentInfo> recentComments,
 
     /**
      * Total number of comments for this movie.
      */
-    private Integer totalComments;
+    Integer totalComments,
 
     /**
-     * Date of the most recent comment.
+     * Timestamp of the most recent comment as a UTC instant.
+     *
+     * <p>Uses {@link Instant} for an immutable, unambiguous UTC representation.
+     * BSON DateTime values are converted via {@code Date.toInstant()}.
      */
-    private Date mostRecentCommentDate;
+    Instant mostRecentCommentDate) {
 
     /**
-     * Nested class for comment information.
+     * Nested record for comment information.
      */
-    @Data
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CommentInfo {
+    public record CommentInfo (
         /**
          * Comment ID as string.
          */
-        private String id;
+        String id,
 
         /**
          * Commenter name.
          */
-        private String name;
+        String name,
 
         /**
          * Commenter email.
          */
-        private String email;
+        String email,
 
         /**
          * Comment text.
          */
-        private String text;
+        String text,
 
         /**
-         * Comment date.
+         * Comment timestamp as a UTC instant.
+         *
+         * <p>Stored as BSON DateTime in MongoDB. Uses {@link Instant} for immutability
+         * and unambiguous UTC semantics.
          */
-        private Date date;
-    }
+        Instant date) {}
 }
 

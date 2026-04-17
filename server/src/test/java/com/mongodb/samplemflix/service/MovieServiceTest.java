@@ -270,8 +270,8 @@ class MovieServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.getInsertedCount());
-        assertNotNull(result.getInsertedIds());
+        assertEquals(2, result.insertedCount());
+        assertNotNull(result.insertedIds());
         verify(movieRepository).saveAll(anyList());
     }
 
@@ -364,7 +364,7 @@ class MovieServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(1L, result.getDeletedCount());
+        assertEquals(1L, result.deletedCount());
         verify(movieRepository).existsById(testId);
         verify(movieRepository).deleteById(testId);
     }
@@ -474,11 +474,11 @@ class MovieServiceTest {
         // Assert
         assertNotNull(results);
         assertEquals(1, results.size());
-        assertEquals("Test Movie", results.get(0).getTitle());
-        assertEquals(2024, results.get(0).getYear());
-        assertEquals(5, results.get(0).getTotalComments());
-        assertNotNull(results.get(0).getRecentComments());
-        assertEquals(1, results.get(0).getRecentComments().size());
+        assertEquals("Test Movie", results.get(0).title());
+        assertEquals(2024, results.get(0).year());
+        assertEquals(5, results.get(0).totalComments());
+        assertNotNull(results.get(0).recentComments());
+        assertEquals(1, results.get(0).recentComments().size());
         verify(mongoTemplate).aggregate(any(Aggregation.class), eq("movies"), eq(Document.class));
     }
 
@@ -523,7 +523,7 @@ class MovieServiceTest {
         MoviesByYearResult result1 = MoviesByYearResult.builder()
                 .year(2024)
                 .movieCount(10)
-                .averageRating(7.5)
+                .averageRating(7.501)
                 .highestRating(9.0)
                 .lowestRating(6.0)
                 .totalVotes(5000L)
@@ -550,10 +550,10 @@ class MovieServiceTest {
         // Assert
         assertNotNull(results);
         assertEquals(2, results.size());
-        assertEquals(2024, results.get(0).getYear());
-        assertEquals(10, results.get(0).getMovieCount());
-        assertEquals(7.5, results.get(0).getAverageRating());
-        assertEquals(2023, results.get(1).getYear());
+        assertEquals(2024, results.get(0).year());
+        assertEquals(10, results.get(0).movieCount());
+        assertEquals(7.5, results.get(0).averageRating());
+        assertEquals(2023, results.get(1).year());
         verify(mongoTemplate).aggregate(any(Aggregation.class), eq("movies"), eq(MoviesByYearResult.class));
     }
 
@@ -587,10 +587,10 @@ class MovieServiceTest {
         // Assert
         assertNotNull(results);
         assertEquals(2, results.size());
-        assertEquals("Christopher Nolan", results.get(0).getDirector());
-        assertEquals(10, results.get(0).getMovieCount());
-        assertEquals(8.5, results.get(0).getAverageRating());
-        assertEquals("Steven Spielberg", results.get(1).getDirector());
+        assertEquals("Christopher Nolan", results.get(0).director());
+        assertEquals(10, results.get(0).movieCount());
+        assertEquals(8.5, results.get(0).averageRating());
+        assertEquals("Steven Spielberg", results.get(1).director());
         verify(mongoTemplate).aggregate(any(Aggregation.class), eq("movies"), eq(DirectorStatisticsResult.class));
     }
 
@@ -634,8 +634,8 @@ class MovieServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(5L, result.getMatchedCount());
-        assertEquals(5L, result.getModifiedCount());
+        assertEquals(5L, result.matchedCount());
+        assertEquals(5L, result.modifiedCount());
         verify(mongoTemplate).updateMulti(any(Query.class), any(org.springframework.data.mongodb.core.query.Update.class), eq(Movie.class));
     }
 
@@ -679,7 +679,7 @@ class MovieServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(10L, result.getDeletedCount());
+        assertEquals(10L, result.deletedCount());
         verify(mongoTemplate).remove(any(Query.class), eq(Movie.class));
     }
 

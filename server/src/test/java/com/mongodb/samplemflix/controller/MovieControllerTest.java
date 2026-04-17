@@ -22,8 +22,8 @@ import com.mongodb.samplemflix.model.dto.MoviesByYearResult;
 import com.mongodb.samplemflix.model.dto.UpdateMovieRequest;
 import com.mongodb.samplemflix.model.dto.VectorSearchResult;
 import com.mongodb.samplemflix.service.MovieService;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -343,7 +343,7 @@ class MovieControllerTest {
                 .name("John Doe")
                 .email("john@example.com")
                 .text("Great movie!")
-                .date(new Date())
+                .date(Instant.now())
                 .build();
 
         MovieWithCommentsResult result = MovieWithCommentsResult.builder()
@@ -356,7 +356,7 @@ class MovieControllerTest {
                 .imdbRating(8.5)
                 .recentComments(Arrays.asList(comment))
                 .totalComments(5)
-                .mostRecentCommentDate(new Date())
+                .mostRecentCommentDate(Instant.now())
                 .build();
 
         when(movieService.getMoviesWithMostRecentComments(anyInt(), isNull())).thenReturn(Arrays.asList(result));

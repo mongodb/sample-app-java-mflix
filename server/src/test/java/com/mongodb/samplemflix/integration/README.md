@@ -4,48 +4,29 @@ This directory contains integration tests for MongoDB Search functionality.
 
 ## Overview
 
-The `MongoDBSearchIntegrationTest` class tests the MongoDB Search endpoints with a real MongoDB Atlas instance. These tests verify that:
+The `MongoDBSearchIntegrationTest` class tests the MongoDB Search endpoints with a real MongoDB instance. These tests verify that:
 
 1. The MongoDB Search index is created correctly
 2. The index becomes ready for use (using polling)
 3. The `/search` endpoint returns correct results
 4. Pagination works correctly
 5. Empty results are handled properly
+6. BSON DateTime values at midnight UTC round-trip correctly to `LocalDate` without date shift across JVM timezones
 
 ## Requirements
 
-These tests require:
+- **Docker** must be running (for the local Atlas container)
+- Alternatively, set `MONGODB_URI` to use an external MongoDB Atlas cluster instead of Docker
 
-- **MongoDB Atlas cluster** (not local MongoDB or Testcontainers)
-- **MongoDB Search capability** enabled on the cluster
-- **MONGODB_URI** environment variable pointing to your Atlas cluster
-- **ENABLE_SEARCH_TESTS=true** environment variable to enable the tests
+By default, tests spin up a `MongoDBAtlasLocalContainer` via Testcontainers, which provides a local Atlas environment with full Search support. No external cluster or special environment variables are needed.
+
+If neither Docker nor `MONGODB_URI` is available, the tests will fail.
 
 ## Running the Tests
 
-### Enable the Tests
+### Default (local Atlas container via Docker)
 
-By default, these tests are **disabled** to prevent accidental runs against production databases. To enable them:
-
-```bash
-export ENABLE_SEARCH_TESTS=true
-```
-
-### Set MongoDB URI
-
-Make sure your `MONGODB_URI` environment variable points to a MongoDB Atlas cluster:
-
-```bash
-export MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/sample_mflix?retryWrites=true&w=majority"
-```
-
-Or use a `.env` file in the `server/java-spring` directory:
-
-```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/sample_mflix?retryWrites=true&w=majority
-```
-
-### Run the Tests
+Just run the tests — Docker handles the rest:
 
 ```bash
 # Run all integration tests
@@ -55,9 +36,32 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/sample_mflix?ret
 ./mvnw test -Dtest=MongoDBSearchIntegrationTest#testSearchMoviesByPlot_Success
 ```
 
+### External Atlas Cluster (optional)
+
+To run against an external MongoDB Atlas cluster instead of Docker, set the `MONGODB_URI` environment variable:
+
+```bash
+export MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/sample_mflix?retryWrites=true&w=majority"
+```
+
+Or use a `.env` file in the `server/java-spring` directory:
+
+```
+MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/sample_mflix?retryWrites=true&w=majority"
+```
+
+When `MONGODB_URI` is set, no Docker container is started.
+
 ## How the Tests Work
 
-### 1. Index Creation and Polling
+### Test Configuration
+
+`MongoDBTestContainersConfig` is a `@TestConfiguration` that conditionally starts a `MongoDBAtlasLocalContainer`:
+
+- If `spring.data.mongodb.uri` is empty or absent, it starts a local Atlas container and registers its connection string
+- If `spring.data.mongodb.uri` is already set (via `MONGODB_URI` env var), no container is started
+
+### Index Creation and Polling
 
 The tests use a `@BeforeAll` method to:
 
@@ -66,18 +70,21 @@ The tests use a `@BeforeAll` method to:
 3. Poll the index status every 5 seconds until it's "READY"
 4. Wait up to 120 seconds (2 minutes) for the index to be ready
 5. Throw an exception if the index doesn't become ready in time
+6. Wait an additional 10 seconds for asynchronous document indexing
 
-### 2. Test Data Setup
+### Test Data Setup
 
-The tests create temporary test movies with known plot content:
+The tests create temporary test movies with known plot content and `released` dates stored as BSON DateTime at midnight UTC:
 
-- "An epic space adventure across the galaxy"
-- "A detective solves a mysterious crime"
-- "Heroes embark on a dangerous adventure"
+| Title | Plot | Released (UTC) |
+|---|---|---|
+| Test Space Adventure | An epic space adventure across the galaxy | 2024-01-01 |
+| Test Mystery Movie | A detective solves a mysterious crime | 2024-03-31 |
+| Test Adventure Quest | Heroes embark on a dangerous adventure | 2024-12-31 |
 
-These movies are used to verify search functionality.
+These movies are used to verify both search functionality and correct `LocalDate` round-tripping of the `released` field.
 
-### 3. Test Cleanup
+### Test Cleanup
 
 The `@AfterAll` method removes the test movies after all tests complete. The search index is **not** deleted because:
 
@@ -99,22 +106,17 @@ Verifies that the `limit` parameter correctly limits the number of results.
 ### testSearchMoviesByPlot_WithPagination
 Verifies that the `skip` parameter works for pagination and returns different results on different pages.
 
+### testReleasedFieldRoundTrip_NoDateShift
+Verifies that BSON DateTime values at midnight UTC are read as the correct `LocalDate` without date shift. The test temporarily switches the JVM default timezone through `America/New_York`, `America/Los_Angeles`, `Asia/Tokyo`, `Europe/London`, and `Pacific/Auckland` to ensure the native `LocalDateCodec` always interprets BSON DateTime in UTC.
+
 ## Troubleshooting
-
-### Tests are Skipped
-
-If you see "Skipping Search tests - ENABLE_SEARCH_TESTS not set", make sure you've set the environment variable:
-
-```bash
-export ENABLE_SEARCH_TESTS=true
-```
 
 ### Index Creation Timeout
 
 If the tests fail with "Search index did not become ready within 120 seconds":
 
-1. Check that your cluster has MongoDB Search enabled
-2. Verify you're using a MongoDB Atlas cluster (not local MongoDB)
+1. Ensure Docker is running and has enough resources
+2. If using an external cluster, check that it has MongoDB Search enabled
 3. Check the Atlas UI to see if the index is being created
 4. Increase `MAX_INDEX_WAIT_SECONDS` if needed
 
@@ -122,9 +124,9 @@ If the tests fail with "Search index did not become ready within 120 seconds":
 
 If you get connection errors:
 
-1. Verify your `MONGODB_URI` is correct
-2. Check that your IP address is whitelisted in Atlas
-3. Verify your database user credentials are correct
+1. Verify Docker is running (`docker ps`)
+2. If using an external Atlas cluster, verify your `MONGODB_URI` is correct
+3. Check that your IP address is whitelisted in Atlas (for external clusters)
 
 ## Notes
 
