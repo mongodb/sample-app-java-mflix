@@ -2,10 +2,7 @@ package com.mongodb.samplemflix.model.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Success response wrapper for API responses.
@@ -21,66 +18,63 @@ import lombok.NoArgsConstructor;
  *   pagination?: { page, limit, total, pages }
  * }</pre>
  */
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SuccessResponse<T> implements ApiResponse {
+public record SuccessResponse<T> (
 
     /**
      * Always true for success responses.
      */
-    @Builder.Default
-    private boolean success = true;
+    boolean success,
 
     /**
      * Optional success message.
      */
-    private String message;
+    String message,
 
     /**
      * The response data (generic type).
      */
-    private T data;
+    T data,
 
     /**
      * ISO 8601 timestamp when the response was generated.
      */
-    @Builder.Default
-    private String timestamp = Instant.now().toString();
+    String timestamp,
 
     /**
      * Optional pagination metadata (for list responses).
      */
-    private Pagination pagination;
+    Pagination pagination) implements ApiResponse {
+
+    // Partial builder declaration to provide defaults for records (like @Builder.Default for classes)
+    public static class SuccessResponseBuilder<T> {
+        private boolean success = true;
+        private String timestamp = Instant.now().toString();
+    }
 
     /**
      * Nested class for pagination metadata.
      */
-    @Data
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Pagination {
+    public record Pagination (
         /**
          * Current page number (1-based).
          */
-        private int page;
+        int page,
 
         /**
          * Number of items per page.
          */
-        private int limit;
+        int limit,
 
         /**
          * Total number of items.
          */
-        private long total;
+        long total,
 
         /**
          * Total number of pages.
          */
-        private int pages;
-    }
+        int pages) {}
 }

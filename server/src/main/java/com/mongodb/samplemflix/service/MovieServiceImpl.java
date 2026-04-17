@@ -77,11 +77,11 @@ public class MovieServiceImpl implements MovieService {
     public List<Movie> getAllMovies(MovieSearchQuery query) {
         Query mongoQuery = buildQuery(query);
 
-        int limit = Math.clamp(query.getLimit() != null ? query.getLimit() : 20, 1, 100);
-        int skip = Math.max(query.getSkip() != null ? query.getSkip() : 0, 0);
+        int limit = Math.clamp(query.limit() != null ? query.limit() : 20, 1, 100);
+        int skip = Math.max(query.skip() != null ? query.skip() : 0, 0);
 
         mongoQuery.skip(skip).limit(limit);
-        mongoQuery.with(buildSort(query.getSortBy(), query.getSortOrder()));
+        mongoQuery.with(buildSort(query.sortBy(), query.sortOrder()));
 
         return mongoTemplate.find(mongoQuery, Movie.class);
     }
@@ -116,24 +116,24 @@ public class MovieServiceImpl implements MovieService {
     
     @Override
     public Movie createMovie(CreateMovieRequest request) {
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+        if (request.title() == null || request.title().trim().isEmpty()) {
             throw new ValidationException("Title is required");
         }
 
         Movie movie = Movie.builder()
-                .title(request.getTitle())
-                .year(request.getYear())
-                .plot(request.getPlot())
-                .fullplot(request.getFullplot())
-                .genres(request.getGenres())
-                .directors(request.getDirectors())
-                .writers(request.getWriters())
-                .cast(request.getCast())
-                .countries(request.getCountries())
-                .languages(request.getLanguages())
-                .rated(request.getRated())
-                .runtime(request.getRuntime())
-                .poster(request.getPoster())
+                .title(request.title())
+                .year(request.year())
+                .plot(request.plot())
+                .fullplot(request.fullplot())
+                .genres(request.genres())
+                .directors(request.directors())
+                .writers(request.writers())
+                .cast(request.cast())
+                .countries(request.countries())
+                .languages(request.languages())
+                .rated(request.rated())
+                .runtime(request.runtime())
+                .poster(request.poster())
                 .build();
 
         // Spring Data MongoDB's save() method inserts or updates
@@ -148,26 +148,26 @@ public class MovieServiceImpl implements MovieService {
 
         for (int i = 0; i < requests.size(); i++) {
             CreateMovieRequest request = requests.get(i);
-            if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            if (request.title() == null || request.title().trim().isEmpty()) {
                 throw new ValidationException("Movie at index " + i + ": Title is required");
             }
         }
 
         List<Movie> movies = requests.stream()
                 .map(request -> Movie.builder()
-                        .title(request.getTitle())
-                        .year(request.getYear())
-                        .plot(request.getPlot())
-                        .fullplot(request.getFullplot())
-                        .genres(request.getGenres())
-                        .directors(request.getDirectors())
-                        .writers(request.getWriters())
-                        .cast(request.getCast())
-                        .countries(request.getCountries())
-                        .languages(request.getLanguages())
-                        .rated(request.getRated())
-                        .runtime(request.getRuntime())
-                        .poster(request.getPoster())
+                        .title(request.title())
+                        .year(request.year())
+                        .plot(request.plot())
+                        .fullplot(request.fullplot())
+                        .genres(request.genres())
+                        .directors(request.directors())
+                        .writers(request.writers())
+                        .cast(request.cast())
+                        .countries(request.countries())
+                        .languages(request.languages())
+                        .rated(request.rated())
+                        .runtime(request.runtime())
+                        .poster(request.poster())
                         .build())
                 .toList();
 
@@ -302,30 +302,30 @@ public class MovieServiceImpl implements MovieService {
         Query mongoQuery = new Query();
 
         // Text search
-        if (query.getQ() != null && !query.getQ().trim().isEmpty()) {
-            TextCriteria textCriteria = TextCriteria.forDefaultLanguage().matching(query.getQ());
+        if (query.q() != null && !query.q().trim().isEmpty()) {
+            TextCriteria textCriteria = TextCriteria.forDefaultLanguage().matching(query.q());
             mongoQuery.addCriteria(textCriteria);
         }
 
         // Genre filter (case-insensitive regex)
-        if (query.getGenre() != null && !query.getGenre().trim().isEmpty()) {
+        if (query.genre() != null && !query.genre().trim().isEmpty()) {
             mongoQuery.addCriteria(Criteria.where(Movie.Fields.GENRES)
-                    .regex(Pattern.compile(query.getGenre(), Pattern.CASE_INSENSITIVE)));
+                    .regex(Pattern.compile(query.genre(), Pattern.CASE_INSENSITIVE)));
         }
 
         // Year filter
-        if (query.getYear() != null) {
-            mongoQuery.addCriteria(Criteria.where(Movie.Fields.YEAR).is(query.getYear()));
+        if (query.year() != null) {
+            mongoQuery.addCriteria(Criteria.where(Movie.Fields.YEAR).is(query.year()));
         }
 
         // Rating range filter
-        if (query.getMinRating() != null || query.getMaxRating() != null) {
+        if (query.minRating() != null || query.maxRating() != null) {
             Criteria ratingCriteria = Criteria.where(Movie.Fields.IMDB_RATING);
-            if (query.getMinRating() != null) {
-                ratingCriteria = ratingCriteria.gte(query.getMinRating());
+            if (query.minRating() != null) {
+                ratingCriteria = ratingCriteria.gte(query.minRating());
             }
-            if (query.getMaxRating() != null) {
-                ratingCriteria = ratingCriteria.lte(query.getMaxRating());
+            if (query.maxRating() != null) {
+                ratingCriteria = ratingCriteria.lte(query.maxRating());
             }
             mongoQuery.addCriteria(ratingCriteria);
         }
@@ -491,12 +491,11 @@ public class MovieServiceImpl implements MovieService {
 
         // Round average rating to 2 decimal places
         return results.getMappedResults().stream()
-                .peek(result -> {
-                    if (result.getAverageRating() != null) {
-                        result.setAverageRating(
-                                Math.round(result.getAverageRating() * 100.0) / 100.0
-                        );
+                .map(result -> {
+                    if (result.averageRating() != null) {
+                        return result.withAverageRating(Math.round(result.averageRating() * 100.0) / 100.0);
                     }
+                    return result;
                 })
                 .collect(Collectors.toList());
     }
@@ -547,12 +546,11 @@ public class MovieServiceImpl implements MovieService {
 
         // Round average rating to 2 decimal places
         return results.getMappedResults().stream()
-                .peek(result -> {
-                    if (result.getAverageRating() != null) {
-                        result.setAverageRating(
-                                Math.round(result.getAverageRating() * 100.0) / 100.0
-                        );
+                .map(result -> {
+                    if (result.averageRating() != null) {
+                        return result.withAverageRating(Math.round(result.averageRating() * 100.0) / 100.0);
                     }
+                    return result;
                 })
                 .collect(Collectors.toList());
     }
@@ -576,7 +574,7 @@ public class MovieServiceImpl implements MovieService {
                             .name(commentDoc.getString("name"))
                             .email(commentDoc.getString("email"))
                             .text(commentDoc.getString("text"))
-                            .date(commentDoc.getDate("date"))
+                            .date(commentDoc.get("date") != null ? commentDoc.getDate("date").toInstant() : null)
                             .build())
                     .collect(Collectors.toList());
         }
@@ -600,7 +598,7 @@ public class MovieServiceImpl implements MovieService {
                 .imdbRating(imdbRating)
                 .recentComments(recentComments)
                 .totalComments(doc.getInteger("totalComments"))
-                .mostRecentCommentDate(doc.getDate("mostRecentCommentDate"))
+                .mostRecentCommentDate(doc.getDate("mostRecentCommentDate") != null ? doc.getDate("mostRecentCommentDate").toInstant() : null)
                 .build();
     }
 
@@ -614,8 +612,8 @@ public class MovieServiceImpl implements MovieService {
         }
 
         // Validate search operator
-        String operator = searchRequest.getSearchOperator() != null ?
-                searchRequest.getSearchOperator() : "must";
+        String operator = searchRequest.searchOperator() != null ?
+                searchRequest.searchOperator() : "must";
 
         if (!operator.equals("must") && !operator.equals("should") &&
             !operator.equals("mustNot") && !operator.equals("filter")) {
@@ -627,27 +625,27 @@ public class MovieServiceImpl implements MovieService {
 
         // Validate and set defaults for pagination
         int resultLimit = Math.clamp(
-            searchRequest.getLimit() != null ? searchRequest.getLimit() : 20, 1, 100
+            searchRequest.limit() != null ? searchRequest.limit() : 20, 1, 100
         );
         int resultSkip = Math.max(
-            searchRequest.getSkip() != null ? searchRequest.getSkip() : 0, 0
+            searchRequest.skip() != null ? searchRequest.skip() : 0, 0
         );
 
         // Build search phrases list
         java.util.List<Document> searchPhrases = new java.util.ArrayList<>();
 
         // Add plot search if provided (using phrase operator)
-        if (searchRequest.getPlot() != null && !searchRequest.getPlot().trim().isEmpty()) {
+        if (searchRequest.plot() != null && !searchRequest.plot().trim().isEmpty()) {
             searchPhrases.add(new Document("phrase", new Document()
-                    .append("query", searchRequest.getPlot().trim())
+                    .append("query", searchRequest.plot().trim())
                     .append("path", Movie.Fields.PLOT)
             ));
         }
 
         // Add fullplot search if provided (using phrase operator)
-        if (searchRequest.getFullplot() != null && !searchRequest.getFullplot().trim().isEmpty()) {
+        if (searchRequest.fullplot() != null && !searchRequest.fullplot().trim().isEmpty()) {
             searchPhrases.add(new Document("phrase", new Document()
-                    .append("query", searchRequest.getFullplot().trim())
+                    .append("query", searchRequest.fullplot().trim())
                     .append("path", Movie.Fields.FULLPLOT)
             ));
         }
@@ -658,8 +656,8 @@ public class MovieServiceImpl implements MovieService {
         // 2. text match without fuzzy (high score) - all terms present, exact spelling
         // 3. text match with fuzzy (lower score) - typo-tolerant fallback; update fuzzy settings as needed
         // For more details, see: https://www.mongodb.com/docs/atlas/atlas-search/operators-collectors/text/
-        if (searchRequest.getDirectors() != null && !searchRequest.getDirectors().trim().isEmpty()) {
-            String directorsQuery = searchRequest.getDirectors().trim();
+        if (searchRequest.directors() != null && !searchRequest.directors().trim().isEmpty()) {
+            String directorsQuery = searchRequest.directors().trim();
             searchPhrases.add(new Document("compound", new Document()
                     .append("should", java.util.Arrays.asList(
                             // Highest score: exact phrase match
@@ -686,8 +684,8 @@ public class MovieServiceImpl implements MovieService {
         }
 
         // Add writers search if provided (see directors comments for compound scoring hierarchy)
-        if (searchRequest.getWriters() != null && !searchRequest.getWriters().trim().isEmpty()) {
-            String writersQuery = searchRequest.getWriters().trim();
+        if (searchRequest.writers() != null && !searchRequest.writers().trim().isEmpty()) {
+            String writersQuery = searchRequest.writers().trim();
             searchPhrases.add(new Document("compound", new Document()
                     .append("should", java.util.Arrays.asList(
                             new Document("phrase", new Document()
@@ -710,8 +708,8 @@ public class MovieServiceImpl implements MovieService {
         }
 
         // Add cast search if provided (see directors comments for compound scoring hierarchy)
-        if (searchRequest.getCast() != null && !searchRequest.getCast().trim().isEmpty()) {
-            String castQuery = searchRequest.getCast().trim();
+        if (searchRequest.cast() != null && !searchRequest.cast().trim().isEmpty()) {
+            String castQuery = searchRequest.cast().trim();
             searchPhrases.add(new Document("compound", new Document()
                     .append("should", java.util.Arrays.asList(
                             new Document("phrase", new Document()

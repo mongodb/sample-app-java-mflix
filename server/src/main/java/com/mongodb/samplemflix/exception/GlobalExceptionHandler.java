@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
         logger.error("Resource not found: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message(ex.getMessage())
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage())
@@ -47,7 +46,6 @@ public class GlobalExceptionHandler {
         logger.error("Validation error: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message("Validation failed")
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage())
@@ -67,7 +65,6 @@ public class GlobalExceptionHandler {
         String message = String.format("Required parameter '%s' is missing", ex.getParameterName());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message(message)
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(message)
@@ -85,7 +82,6 @@ public class GlobalExceptionHandler {
         logger.error("Service unavailable: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message(ex.getMessage())
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage())
@@ -103,7 +99,6 @@ public class GlobalExceptionHandler {
         logger.error("Voyage AI authentication error: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message(ex.getMessage())
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage())
@@ -122,7 +117,6 @@ public class GlobalExceptionHandler {
         logger.error("Voyage AI API error: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message("Vector search service unavailable")
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage())
@@ -140,7 +134,6 @@ public class GlobalExceptionHandler {
         logger.error("Database operation error: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message("Database operation failed")
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage())
@@ -168,7 +161,6 @@ public class GlobalExceptionHandler {
         }
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message(message)
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(message)
@@ -187,7 +179,6 @@ public class GlobalExceptionHandler {
         logger.error("Unexpected error occurred", ex);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .success(false)
                 .message(ex.getMessage() != null ? ex.getMessage() : "Internal server error")
                 .error(ErrorResponse.ErrorDetails.builder()
                         .message(ex.getMessage() != null ? ex.getMessage() : "Internal server error")

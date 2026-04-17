@@ -1,10 +1,8 @@
 package com.mongodb.samplemflix.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.With;
 
 /**
  * DTO for movies aggregated by year with statistics.
@@ -12,41 +10,38 @@ import lombok.NoArgsConstructor;
  * <p>This class represents the result of the reportingByYear aggregation
  * which groups movies by release year and calculates statistics per year.
  */
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MoviesByYearResult {
+public record MoviesByYearResult (
 
     /**
      * Release year.
      */
-    private Integer year;
+    Integer year,
 
     /**
      * Number of movies released in this year.
      */
-    private Integer movieCount;
+    Integer movieCount,
 
     /**
      * Average IMDB rating for movies in this year.
      */
-    private Double averageRating;
+    @With
+    Double averageRating,
 
     /**
      * Highest IMDB rating for movies in this year.
      */
-    private Double highestRating;
+    Double highestRating,
 
     /**
      * Lowest IMDB rating for movies in this year.
      */
-    private Double lowestRating;
+    Double lowestRating,
 
     /**
      * Total number of IMDB votes for all movies in this year.
      */
-    private Long totalVotes;
-}
+    Long totalVotes) {}
 

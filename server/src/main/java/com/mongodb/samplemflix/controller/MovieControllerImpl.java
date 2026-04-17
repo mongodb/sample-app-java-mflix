@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.bson.Document;
@@ -103,10 +102,8 @@ public class MovieControllerImpl {
         String message = "Found " + movies.size() + " movies";
 
         SuccessResponse<List<Movie>> response = SuccessResponse.<List<Movie>>builder()
-                .success(true)
                 .message(message)
                 .data(movies)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -122,10 +119,8 @@ public class MovieControllerImpl {
         List<String> genres = movieService.getDistinctGenres();
 
         SuccessResponse<List<String>> response = SuccessResponse.<List<String>>builder()
-                .success(true)
                 .message("Found " + genres.size() + " distinct genres")
                 .data(genres)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -142,10 +137,8 @@ public class MovieControllerImpl {
         Movie movie = movieService.getMovieById(id);
         
         SuccessResponse<Movie> response = SuccessResponse.<Movie>builder()
-                .success(true)
                 .message("Movie retrieved successfully")
                 .data(movie)
-                .timestamp(Instant.now().toString())
                 .build();
         
         return ResponseEntity.ok(response);
@@ -162,10 +155,8 @@ public class MovieControllerImpl {
         Movie movie = movieService.createMovie(request);
         
         SuccessResponse<Movie> response = SuccessResponse.<Movie>builder()
-                .success(true)
-                .message("Movie '" + request.getTitle() + "' created successfully")
+                .message("Movie '" + request.title() + "' created successfully")
                 .data(movie)
-                .timestamp(Instant.now().toString())
                 .build();
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -182,10 +173,8 @@ public class MovieControllerImpl {
         BatchInsertResponse result = movieService.createMoviesBatch(requests);
 
         SuccessResponse<BatchInsertResponse> response = SuccessResponse.<BatchInsertResponse>builder()
-                .success(true)
-                .message("Successfully created " + result.getInsertedCount() + " movies")
+                .message("Successfully created " + result.insertedCount() + " movies")
                 .data(result)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -210,10 +199,8 @@ public class MovieControllerImpl {
         Movie movie = movieService.updateMovie(id, request);
 
         SuccessResponse<Movie> response = SuccessResponse.<Movie>builder()
-                .success(true)
                 .message("Movie updated successfully")
                 .data(movie)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -235,11 +222,9 @@ public class MovieControllerImpl {
         BatchUpdateResponse result = movieService.updateMoviesBatch(filter, update);
 
         SuccessResponse<BatchUpdateResponse> response = SuccessResponse.<BatchUpdateResponse>builder()
-                .success(true)
-                .message("Update operation completed. Matched " + result.getMatchedCount() +
-                        " documents, modified " + result.getModifiedCount() + " documents.")
+                .message("Update operation completed. Matched " + result.matchedCount() +
+                        " documents, modified " + result.modifiedCount() + " documents.")
                 .data(result)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -257,10 +242,8 @@ public class MovieControllerImpl {
         Movie movie = movieService.findAndDeleteMovie(id);
         
         SuccessResponse<Movie> response = SuccessResponse.<Movie>builder()
-                .success(true)
                 .message("Movie found and deleted successfully")
                 .data(movie)
-                .timestamp(Instant.now().toString())
                 .build();
         
         return ResponseEntity.ok(response);
@@ -277,10 +260,8 @@ public class MovieControllerImpl {
         DeleteResponse result = movieService.deleteMovie(id);
 
         SuccessResponse<DeleteResponse> response = SuccessResponse.<DeleteResponse>builder()
-                .success(true)
                 .message("Movie deleted successfully")
                 .data(result)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -301,10 +282,8 @@ public class MovieControllerImpl {
         DeleteResponse result = movieService.deleteMoviesBatch(filter);
 
         SuccessResponse<DeleteResponse> response = SuccessResponse.<DeleteResponse>builder()
-                .success(true)
-                .message("Delete operation completed. Removed " + result.getDeletedCount() + " documents.")
+                .message("Delete operation completed. Removed " + result.deletedCount() + " documents.")
                 .data(result)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -328,7 +307,7 @@ public class MovieControllerImpl {
 
         // Calculate total comments across all movies
         int totalComments = results.stream()
-                .mapToInt(result -> result.getTotalComments() != null ? result.getTotalComments() : 0)
+                .mapToInt(result -> result.totalComments() != null ? result.totalComments() : 0)
                 .sum();
 
         String message = movieId != null
@@ -338,10 +317,8 @@ public class MovieControllerImpl {
 
         SuccessResponse<List<MovieWithCommentsResult>> response =
                 SuccessResponse.<List<MovieWithCommentsResult>>builder()
-                        .success(true)
                         .message(message)
                         .data(results)
-                        .timestamp(Instant.now().toString())
                         .build();
 
         return ResponseEntity.ok(response);
@@ -359,10 +336,8 @@ public class MovieControllerImpl {
 
         SuccessResponse<List<MoviesByYearResult>> response =
                 SuccessResponse.<List<MoviesByYearResult>>builder()
-                        .success(true)
                         .message(String.format("Aggregated statistics for %d years", results.size()))
                         .data(results)
-                        .timestamp(Instant.now().toString())
                         .build();
 
         return ResponseEntity.ok(response);
@@ -382,10 +357,8 @@ public class MovieControllerImpl {
 
         SuccessResponse<List<DirectorStatisticsResult>> response =
                 SuccessResponse.<List<DirectorStatisticsResult>>builder()
-                        .success(true)
                         .message(String.format("Found %d directors with most movies", results.size()))
                         .data(results)
-                        .timestamp(Instant.now().toString())
                         .build();
 
         return ResponseEntity.ok(response);
@@ -440,10 +413,8 @@ public class MovieControllerImpl {
                 .build();
 
         SuccessResponse<SearchMoviesResponse> response = SuccessResponse.<SearchMoviesResponse>builder()
-                .success(true)
                 .message(String.format("Found %d movies matching the search criteria", movies.size()))
                 .data(searchResponse)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -465,10 +436,8 @@ public class MovieControllerImpl {
         List<VectorSearchResult> results = movieService.vectorSearchMovies(q, limit);
 
         SuccessResponse<List<VectorSearchResult>> response = SuccessResponse.<List<VectorSearchResult>>builder()
-                .success(true)
                 .message(String.format("Found %d similar movies for query: '%s'", results.size(), q))
                 .data(results)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -489,10 +458,8 @@ public class MovieControllerImpl {
         List<Movie> movies = movieService.findSimilarMovies(movieId, limit);
 
         SuccessResponse<List<Movie>> response = SuccessResponse.<List<Movie>>builder()
-                .success(true)
                 .message(String.format("Found %d similar movies", movies.size()))
                 .data(movies)
-                .timestamp(Instant.now().toString())
                 .build();
 
         return ResponseEntity.ok(response);

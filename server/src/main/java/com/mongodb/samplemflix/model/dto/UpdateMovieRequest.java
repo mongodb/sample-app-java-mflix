@@ -1,10 +1,7 @@
 package com.mongodb.samplemflix.model.dto;
 
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Data Transfer Object for updating an existing movie.
@@ -13,74 +10,70 @@ import lombok.NoArgsConstructor;
  * All fields are optional since partial updates are allowed.
  * Any field that is null will not be updated in the database.
  */
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpdateMovieRequest {
+public record UpdateMovieRequest (
 
     /**
      * Movie title (optional).
      */
-    private String title;
+    String title,
 
     /**
      * Release year (optional).
      */
-    private Integer year;
+    Integer year,
 
     /**
      * Short plot summary (optional).
      */
-    private String plot;
+    String plot,
 
     /**
      * Full plot description (optional).
      */
-    private String fullplot;
+    String fullplot,
 
     /**
      * List of genres (optional).
      */
-    private List<String> genres;
+    List<String> genres,
 
     /**
      * List of directors (optional).
      */
-    private List<String> directors;
+    List<String> directors,
 
     /**
      * List of writers (optional).
      */
-    private List<String> writers;
+    List<String> writers,
 
     /**
      * List of cast members (optional).
      */
-    private List<String> cast;
+    List<String> cast,
 
     /**
      * List of countries (optional).
      */
-    private List<String> countries;
+    List<String> countries,
 
     /**
      * List of languages (optional).
      */
-    private List<String> languages;
+    List<String> languages,
 
     /**
      * Movie rating (optional).
      */
-    private String rated;
+    String rated,
 
     /**
      * Runtime in minutes (optional).
      */
-    private Integer runtime;
+    Integer runtime,
 
     /**
      * Poster image URL (optional).
      */
-    private String poster;
-}
+    String poster) {}

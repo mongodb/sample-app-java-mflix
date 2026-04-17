@@ -2,88 +2,81 @@ package com.mongodb.samplemflix.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Data Transfer Object for creating a new movie.
  *
  * <p>This DTO is used for POST /api/movies requests.
  * It includes validation annotations to ensure required fields are present.
- * Only the title field is required; all other fields are optional.
+ * Only the title field is required, all other fields are optional.
  */
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateMovieRequest {
+public record CreateMovieRequest (
 
     /**
      * Movie title (required).
      * Must not be blank.
      */
     @NotBlank(message = "Title is required")
-    private String title;
+    String title,
 
     /**
      * Release year (optional).
      */
-    private Integer year;
+    Integer year,
 
     /**
      * Short plot summary (optional).
      */
-    private String plot;
+    String plot,
 
     /**
      * Full plot description (optional).
      */
-    private String fullplot;
+    String fullplot,
 
     /**
      * List of genres (optional).
      */
-    private List<String> genres;
+    List<String> genres,
 
     /**
      * List of directors (optional).
      */
-    private List<String> directors;
+    List<String> directors,
 
     /**
      * List of writers (optional).
      */
-    private List<String> writers;
+    List<String> writers,
 
     /**
      * List of cast members (optional).
      */
-    private List<String> cast;
+    List<String> cast,
 
     /**
      * List of countries (optional).
      */
-    private List<String> countries;
+    List<String> countries,
 
     /**
      * List of languages (optional).
      */
-    private List<String> languages;
+    List<String> languages,
 
     /**
      * Movie rating (optional).
      */
-    private String rated;
+    String rated,
 
     /**
      * Runtime in minutes (optional).
      */
-    private Integer runtime;
+    Integer runtime,
 
     /**
      * Poster image URL (optional).
      */
-    private String poster;
-}
+    String poster) {}

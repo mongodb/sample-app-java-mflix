@@ -17,12 +17,12 @@ public interface ApiResponse {
      *
      * @return true for successful responses, false for error responses
      */
-    boolean isSuccess();
+    boolean success();
 
     /**
-     * Gets the timestamp when the response was generated.
+     * Returns the timestamp when the response was generated.
      *
      * @return ISO 8601 formatted timestamp string
      */
-    String getTimestamp();
+    String timestamp();
 }
