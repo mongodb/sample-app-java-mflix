@@ -47,21 +47,45 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
             // If URL ends with trailing slash (but not root "/"), redirect to URL without it
             if (requestUri.length() > 1 && requestUri.endsWith("/")) {
-                String newUrl = requestUri.substring(0, requestUri.length() - 1);
+                String redirectPath = requestUri.substring(0, requestUri.length() - 1);
+                if (!isSafeRelativeRedirectPath(redirectPath)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
-                // Preserve query string if present
+                String location = redirectPath;
                 String queryString = request.getQueryString();
-                if (queryString != null) {
-                    newUrl += "?" + queryString;
+                if (queryString != null && !queryString.isBlank()) {
+                    if (!isSafeQueryString(queryString)) {
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                    location = redirectPath + "?" + queryString;
                 }
 
                 // Use 308 Permanent Redirect to preserve the HTTP method (POST, PATCH, DELETE, etc.)
                 response.setStatus(HttpStatus.PERMANENT_REDIRECT.value());
-                response.setHeader("Location", newUrl);
+                response.setHeader("Location", location);
                 return;
             }
 
             filterChain.doFilter(request, response);
+        }
+
+        private static boolean isSafeRelativeRedirectPath(String path) {
+            return path.startsWith("/")
+                    && !path.startsWith("//")
+                    && !path.contains("://")
+                    && !path.contains("\\")
+                    && !path.contains("\0")
+                    && !path.contains("\r")
+                    && !path.contains("\n");
+        }
+
+        private static boolean isSafeQueryString(String queryString) {
+            return !queryString.contains("\r")
+                    && !queryString.contains("\n")
+                    && !queryString.contains("\0");
         }
     }
 }

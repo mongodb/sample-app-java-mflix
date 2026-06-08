@@ -307,10 +307,11 @@ public class MovieServiceImpl implements MovieService {
             mongoQuery.addCriteria(textCriteria);
         }
 
-        // Genre filter (case-insensitive regex)
+        // Genre filter (case-insensitive literal match; escape user input for regex safety)
         if (query.genre() != null && !query.genre().trim().isEmpty()) {
+            String escapedGenre = Pattern.quote(query.genre().trim());
             mongoQuery.addCriteria(Criteria.where(Movie.Fields.GENRES)
-                    .regex(Pattern.compile(query.genre(), Pattern.CASE_INSENSITIVE)));
+                    .regex(Pattern.compile(escapedGenre, Pattern.CASE_INSENSITIVE)));
         }
 
         // Year filter
