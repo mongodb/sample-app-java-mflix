@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>4.1.0</version>
         <relativePath/>
     </parent>
 
@@ -20,12 +20,12 @@
 
     <properties>
         <java.version>21</java.version>
-        <mongodb.version>5.9.0</mongodb.version>
-        <springdoc.version>3.0.3</springdoc.version>
+        <mongodb.version>5.10.0</mongodb.version>
+        <springdoc.version>3.1.0</springdoc.version>
         <dotenv.version>5.1.0</dotenv.version>
         <impsort.plugin.version>1.13.0</impsort.plugin.version>
         <byte-buddy.version>1.17.8</byte-buddy.version>
-        <langchain4j.version>1.15.0-beta25</langchain4j.version>
+        <langchain4j.version>1.19.0-beta29</langchain4j.version>
     </properties>
 
     <dependencies>
