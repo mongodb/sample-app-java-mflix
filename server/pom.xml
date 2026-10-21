@@ -20,7 +20,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <mongodb.version>5.11.0</mongodb.version>
+        <mongodb.version>5.13.0</mongodb.version>
         <springdoc.version>3.1.0</springdoc.version>
         <dotenv.version>5.1.0</dotenv.version>
         <impsort.plugin.version>1.13.0</impsort.plugin.version>
